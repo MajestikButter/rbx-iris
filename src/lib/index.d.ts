@@ -13,7 +13,7 @@ import {
 	SelectableState,
 } from "./widgets/combo";
 import { Arguments, InitialState } from "./widgets/creation/utils";
-import { Widget } from "./widgets/creation/widget";
+import { ParentWidget, TabBarWidget, Widget } from "./widgets/creation/widget";
 import { Event, EventApi, Events, WidgetClass } from "./widgets/creation/widgetClass";
 import { IndentDeclaration, IndentArguments, SameLineArguments } from "./widgets/format";
 import { ImageDeclaration, ImageArguments, ImageButtonDeclaration } from "./widgets/image";
@@ -39,8 +39,16 @@ import {
 	MenuToggleArguments,
 	MenuToggleState,
 } from "./widgets/menu";
-import { ProgressBarDeclaration, ProgressBarArguments, ProgressBarState } from "./widgets/plot";
+import {
+	ProgressBarDeclaration,
+	ProgressBarArguments,
+	ProgressBarState,
+	PlotLinesDeclaration,
+	PlotLinesArguments,
+	PlotLinesState,
+} from "./widgets/plot";
 import { RadioButtonDeclaration, RadioButtonArguments, RadioButtonState } from "./widgets/radioButton";
+import { TabBarDeclaration, TabBarState } from "./widgets/tab";
 import { TableDeclaration, TableArguments } from "./widgets/table";
 import {
 	InputTextDeclaration,
@@ -167,13 +175,20 @@ declare namespace Iris {
 
 	/* --------------------------------- WINDOW --------------------------------- */
 
-	export type Window = Widget<WindowDeclaration>;
+	export type Window = ParentWidget<WindowDeclaration> & { usesScreenGui: boolean };
 	export function Window(args: WindowArguments, state?: InitialState<WindowState>): Window;
 	export function Window(args: Arguments<WindowArguments>, state?: InitialState<WindowState>): Window;
+
+	export type Root = ParentWidget<{}>;
+	export function Root(): Root;
 
 	export type Tooltip = Widget<TooltipDeclaration>;
 	export function Tooltip(args: TooltipArguments): Tooltip;
 	export function Tooltip(args: Arguments<TooltipArguments>): Tooltip;
+
+	/* --------------------------------- TAB --------------------------------- */
+	export type TabBar = TabBarWidget<TabBarDeclaration>;
+	export function TabBar(state?: InitialState<TabBarState>): TabBar;
 
 	/* ---------------------------------- MENU ---------------------------------- */
 
@@ -459,6 +474,16 @@ declare namespace Iris {
 		state?: InitialState<ProgressBarState>,
 	): ProgressBar;
 
+	export type PlotLines = Widget<PlotLinesDeclaration>;
+	export function PlotLines(args: PlotLinesArguments, state?: InitialState<PlotLinesState>): PlotLines;
+	export function PlotLines(args: Arguments<PlotLinesArguments>, state?: InitialState<PlotLinesState>): PlotLines;
+
+	export type PlotHistogram = Widget<PlotLinesDeclaration>;
+	export function PlotHistogram(args: PlotLinesArguments, state?: InitialState<PlotLinesState>): PlotHistogram;
+	export function PlotHistogram(
+		args: Arguments<PlotLinesArguments>,
+		state?: InitialState<PlotLinesState>,
+	): PlotHistogram;
 	/* ---------------------------------- IMAGE --------------------------------- */
 
 	export type Image = Widget<ImageDeclaration>;

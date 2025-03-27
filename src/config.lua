@@ -20,7 +20,7 @@ local TemplateConfig = {
         PopupBgColor = Color3.fromRGB(20, 20, 20),
         PopupBgTransparency = 0.06,
 
-        ScrollbarGrabColor = Color3.fromRGB(128, 128, 128),
+        ScrollbarGrabColor = Color3.fromRGB(79, 79, 79),
         ScrollbarGrabTransparency = 0,
 
         TitleBgColor = Color3.fromRGB(10, 10, 10),
@@ -62,6 +62,13 @@ local TemplateConfig = {
         HeaderActiveColor = Color3.fromRGB(66, 150, 250),
         HeaderActiveTransparency = 0,
 
+        TabColor = Color3.fromRGB(46, 89, 148),
+        TabTransparency = 0.14,
+        TabHoveredColor = Color3.fromRGB(66, 150, 250),
+        TabHoveredTransparency = 0.2,
+        TabActiveColor = Color3.fromRGB(51, 105, 173),
+        TabActiveTransparency = 0,
+
         SelectionImageObjectColor = Color3.fromRGB(255, 255, 255),
         SelectionImageObjectTransparency = 0.8,
         SelectionImageObjectBorderColor = Color3.fromRGB(255, 255, 255),
@@ -87,10 +94,21 @@ local TemplateConfig = {
         CheckMarkColor = Color3.fromRGB(66, 150, 250),
         CheckMarkTransparency = 0,
 
+        PlotLinesColor = Color3.fromRGB(156, 156, 156),
+        PlotLinesTransparency = 0,
+        PlotLinesHoveredColor = Color3.fromRGB(255, 110, 89),
+        PlotLinesHoveredTransparency = 0,
         PlotHistogramColor = Color3.fromRGB(230, 179, 0),
         PlotHistogramTransparency = 0,
         PlotHistogramHoveredColor = Color3.fromRGB(255, 153, 0),
         PlotHistogramHoveredTransparency = 0,
+
+        ResizeGripColor = Color3.fromRGB(66, 150, 250),
+        ResizeGripTransparency = 0.8,
+        ResizeGripHoveredColor = Color3.fromRGB(66, 150, 250),
+        ResizeGripHoveredTransparency = 0.33,
+        ResizeGripActiveColor = Color3.fromRGB(66, 150, 250),
+        ResizeGripActiveTransparency = 0.05,
     },
     colorLight = { -- Dear, ImGui default light
         TextColor = Color3.fromRGB(0, 0, 0),
@@ -123,8 +141,8 @@ local TemplateConfig = {
         MenubarBgColor = Color3.fromRGB(219, 219, 219),
         MenubarBgTransparency = 0,
 
-        ScrollbarGrabColor = Color3.fromRGB(96, 96, 96),
-        ScrollbarGrabTransparency = 0,
+        ScrollbarGrabColor = Color3.fromRGB(176, 176, 176),
+        ScrollbarGrabTransparency = 0.2,
 
         FrameBgColor = Color3.fromRGB(255, 255, 255),
         FrameBgTransparency = 0.6,
@@ -149,6 +167,13 @@ local TemplateConfig = {
         HeaderHoveredTransparency = 0.2,
         HeaderActiveColor = Color3.fromRGB(66, 150, 250),
         HeaderActiveTransparency = 0,
+
+        TabColor = Color3.fromRGB(195, 203, 213),
+        TabTransparency = 0.07,
+        TabHoveredColor = Color3.fromRGB(66, 150, 250),
+        TabHoveredTransparency = 0.2,
+        TabActiveColor = Color3.fromRGB(152, 186, 255),
+        TabActiveTransparency = 0,
 
         SliderGrabColor = Color3.fromRGB(61, 133, 224),
         SliderGrabTransparency = 0,
@@ -180,10 +205,21 @@ local TemplateConfig = {
         CheckMarkColor = Color3.fromRGB(66, 150, 250),
         CheckMarkTransparency = 0,
 
+        PlotLinesColor = Color3.fromRGB(99, 99, 99),
+        PlotLinesTransparency = 0,
+        PlotLinesHoveredColor = Color3.fromRGB(255, 110, 89),
+        PlotLinesHoveredTransparency = 0,
         PlotHistogramColor = Color3.fromRGB(230, 179, 0),
         PlotHistogramTransparency = 0,
         PlotHistogramHoveredColor = Color3.fromRGB(255, 153, 0),
         PlotHistogramHoveredTransparency = 0,
+
+        ResizeGripColor = Color3.fromRGB(89, 89, 89),
+        ResizeGripTransparency = 0.83,
+        ResizeGripHoveredColor = Color3.fromRGB(66, 150, 250),
+        ResizeGripHoveredTransparency = 0.33,
+        ResizeGripActiveColor = Color3.fromRGB(66, 150, 250),
+        ResizeGripActiveTransparency = 0.05,
     },
 
     sizeDefault = { -- Dear, ImGui default

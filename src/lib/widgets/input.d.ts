@@ -1,12 +1,11 @@
 import { Hovered, WidgetArguments, WidgetEvents, WidgetState } from "./creation/utils";
 import { EventApi } from "./creation/widgetClass";
+import { NumberChanged } from "./unknown";
 
 type InputArguments<T> = [Text?: string, Increment?: T, Min?: T, Max?: T, Format?: string | string[]];
 type InputNumArguments = [...InputArguments<number>, NoButtons?: boolean];
 
-type InputEvents = {
-	numberChanged: EventApi;
-} & Hovered;
+type InputEvents = NumberChanged & Hovered;
 
 type InputState<T> = {
 	number: T;
@@ -22,9 +21,17 @@ type InputColor4State = {
 	transparency: number;
 } & InputColorState;
 
-type InputWidgetDeclaration<T> = WidgetArguments<InputArguments<T>> & WidgetEvents<InputEvents> & WidgetState<InputState<T>>;
+type InputWidgetDeclaration<T> = WidgetArguments<InputArguments<T>> &
+	WidgetEvents<InputEvents> &
+	WidgetState<InputState<T>>;
 
-export type InputNumDeclaration = WidgetArguments<InputNumArguments> & WidgetEvents<InputEvents> & WidgetState<InputState<number>>;
+export type InputNumDeclaration = WidgetArguments<InputNumArguments> &
+	WidgetEvents<InputEvents> &
+	WidgetState<InputState<number>>;
 
-export type InputColor3Declaration = WidgetArguments<InputColorArguments> & WidgetEvents<InputEvents> & WidgetState<InputColorState>;
-export type InputColor4Declaration = WidgetArguments<InputColorArguments> & WidgetEvents<InputEvents> & WidgetState<InputColor4State>;
+export type InputColor3Declaration = WidgetArguments<InputColorArguments> &
+	WidgetEvents<InputEvents> &
+	WidgetState<InputColorState>;
+export type InputColor4Declaration = WidgetArguments<InputColorArguments> &
+	WidgetEvents<InputEvents> &
+	WidgetState<InputColor4State>;

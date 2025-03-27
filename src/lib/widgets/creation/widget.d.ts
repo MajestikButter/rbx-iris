@@ -15,28 +15,20 @@ type Widget<T extends WidgetDeclaration = UnknownDeclaration> = {
 
 	trackedEvents: {};
 	lastCycleTick: number;
-
-	// Event Props
-	isHoveredEvent: boolean;
-
-	lastClickedTick: number;
-	lastClickedTime: number;
-	lastClickedPosition: Vector2;
-
-	lastRightClickedTick: number;
-	lastDoubleClickedTick: number;
-	lastCtrlClickedTick: number;
-
-	lastCheckedTick: number;
-	lastUncheckedTick: number;
-	lastOpenedTick: number;
-	lastClosedTick: number;
-	lastSelectedTick: number;
-	lastUnselectedTick: number;
-	lastCollapsedTick: number;
-	lastUncollapsedTick: number;
-
-	lastNumberChangedTick: number;
-	lastTextchangeTick: number;
-	lastShortcutTick: number;
 } & T["Events"];
+
+type ParentWidget<T extends WidgetDeclaration = UnknownDeclaration> = Widget<T> & {
+	ChildContainer: GuiObject;
+	ZOffset: number;
+	ZUpdate: boolean;
+};
+
+type TabWidget<T extends WidgetDeclaration = UnknownDeclaration> = ParentWidget<T> & {
+	parentWidget: TabBarWidget;
+	Index: number;
+	ButtonColors: Record<string, Color3 | number>;
+};
+
+type TabBarWidget<T extends WidgetDeclaration = UnknownDeclaration> = ParentWidget<T> & {
+	Tabs: Array<TabWidget>;
+};

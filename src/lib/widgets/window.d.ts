@@ -28,5 +28,7 @@ type WindowState = {
 };
 type TooltipArguments = [Text: string];
 
-export type WindowDeclaration = WidgetArguments<WindowArguments> & WidgetState<WindowState> & WidgetEvents<WindowEvents>;
+export type WindowDeclaration = WidgetArguments<WindowArguments> &
+	WidgetState<WindowState> &
+	WidgetEvents<WindowEvents> & { usesScreenGui: boolean };
 export type TooltipDeclaration = WidgetArguments<TooltipArguments>;

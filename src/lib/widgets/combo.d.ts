@@ -1,8 +1,8 @@
-import { Active, ClickEvents, Clicked, Hovered, OpenEvents, SelectEvents, WidgetArguments, WidgetEvents, WidgetExtra, WidgetState } from "./creation/utils";
+import { Active, Changed, ClickEvents, Clicked, Hovered, OpenEvents, SelectEvents, WidgetArguments, WidgetEvents, WidgetExtra, WidgetState } from "./creation/utils";
 
 type ComboArguments = [Text: string, NoButton?: boolean, NoPreview?: boolean];
 
-type ComboEvents = Hovered & Clicked & OpenEvents;
+type ComboEvents = Hovered & Clicked & OpenEvents & Changed;
 
 type ComboState = {
 	index: unknown;
