@@ -13,7 +13,7 @@ import {
 	SelectableState,
 } from "./widgets/combo";
 import { Arguments, InitialState } from "./widgets/creation/utils";
-import { ParentWidget, TabBarWidget, Widget } from "./widgets/creation/widget";
+import { ParentWidget, TabBarWidget, TabWidget, Widget } from "./widgets/creation/widget";
 import { Event, EventApi, Events, WidgetClass } from "./widgets/creation/widgetClass";
 import { IndentDeclaration, IndentArguments, SameLineArguments } from "./widgets/format";
 import { ImageDeclaration, ImageArguments, ImageButtonDeclaration } from "./widgets/image";
@@ -48,7 +48,7 @@ import {
 	PlotLinesState,
 } from "./widgets/plot";
 import { RadioButtonDeclaration, RadioButtonArguments, RadioButtonState } from "./widgets/radioButton";
-import { TabBarDeclaration, TabBarState } from "./widgets/tab";
+import { TabArguments, TabBarDeclaration, TabBarState, TabDeclaration, TabState } from "./widgets/tab";
 import { TableDeclaration, TableArguments } from "./widgets/table";
 import {
 	InputTextDeclaration,
@@ -189,6 +189,10 @@ declare namespace Iris {
 	/* --------------------------------- TAB --------------------------------- */
 	export type TabBar = TabBarWidget<TabBarDeclaration>;
 	export function TabBar(state?: InitialState<TabBarState>): TabBar;
+
+	export type Tab = TabWidget<TabDeclaration>;
+	export function Tab(args: TabArguments, state?: InitialState<TabState>): Tab;
+	export function Tab(args: Arguments<TabArguments>, state?: InitialState<TabState>): Tab;
 
 	/* ---------------------------------- MENU ---------------------------------- */
 
