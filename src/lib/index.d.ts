@@ -93,7 +93,7 @@ declare namespace Iris {
 	export { Config };
 	export { Internal };
 
-	export function Init(instance?: BasePlayerGui | GuiBase, eventConnection?: EventLike): void;
+	export function Init(instance?: BasePlayerGui | GuiBase, eventConnection?: EventLike, allowMultipleInits?: boolean): void;
 	export function Shutdown(): void;
 	export function Connect(this: typeof Iris, callback: () => unknown | void): () => void;
 	export function Append(userInstance: GuiObject): void;
@@ -468,6 +468,10 @@ declare namespace Iris {
 	export function NextColumn(): void;
 	export function SetColumnIndex(columnIndex: number): void;
 	export function NextRow(): void;
+	export function SetRowIndex(rowIndex: number): void;
+	export function NextHeaderColumn(): void;
+	export function SetHeaderColumnIndex(columnIndex: number): void;
+	export function SetColumnWidth(columnIndex: number, width: number): void;
 
 	/* ---------------------------------- PLOT ---------------------------------- */
 

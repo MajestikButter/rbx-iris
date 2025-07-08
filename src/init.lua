@@ -60,6 +60,7 @@ Iris.Events = {}
     @function Init
     @param parentInstance Instance? -- where Iris will place widgets UIs under, defaulting to [PlayerGui]
     @param eventConnection (RBXScriptSignal | () -> () | false)? -- the event to determine an Iris cycle, defaulting to [Heartbeat]
+    @param allowMultipleInits boolean? -- allows subsequent calls 'Iris.Init()' to do nothing rather than error about initialising again, defaulting to false
     @return Iris
 
     Initializes Iris and begins rendering. Can only be called once.
@@ -69,9 +70,13 @@ Iris.Events = {}
 
     If the `eventConnection` is `false` then Iris will not create a cycle loop and the user will need to call [Internal._cycle] every frame.
 ]=]
-function Iris.Init(parentInstance: Instance?, eventConnection: (RBXScriptSignal | (() -> number) | false)?): Types.Iris
-    assert(Internal._started == false, "Iris.Init() can only be called once.")
+function Iris.Init(parentInstance: Instance?, eventConnection: (RBXScriptSignal | (() -> number) | false)?, allowMultipleInits: boolean): Types.Iris
     assert(Internal._shutdown == false, "Iris.Init() cannot be called once shutdown.")
+    assert(Internal._started == false or allowMultipleInits == true, "Iris.Init() can only be called once.")
+
+    if Internal._started then
+        return Iris
+    end
 
     if parentInstance == nil then
         -- coalesce to playerGui
@@ -87,7 +92,7 @@ function Iris.Init(parentInstance: Instance?, eventConnection: (RBXScriptSignal 
     Internal._generateRootInstance()
     Internal._generateSelectionImageObject()
 
-    for _, callback: () -> () in Internal._initFunctions do
+    for _, callback in Internal._initFunctions do
         callback()
     end
 
@@ -95,7 +100,7 @@ function Iris.Init(parentInstance: Instance?, eventConnection: (RBXScriptSignal 
     task.spawn(function()
         if typeof(eventConnection) == "function" then
             while Internal._started do
-                local deltaTime: number = eventConnection()
+                local deltaTime = eventConnection()
                 Internal._cycle(deltaTime)
             end
         elseif eventConnection ~= nil and eventConnection ~= false then
@@ -134,7 +139,7 @@ function Iris.Shutdown()
         Internal.SelectionImageObject:Destroy()
     end
 
-    for _, connection: RBXScriptConnection in Internal._connections do
+    for _, connection in Internal._connections do
         connection:Disconnect()
     end
 end
@@ -144,7 +149,7 @@ end
     @method Connect
     @param callback () -> () -- the callback containg the Iris code
     @return () -> () -- call to disconnect it
-    
+
     Connects a function which will execute every Iris cycle. [Iris.Init] must be called before connecting.
 
     A cycle is determined by the `eventConnection` passed to [Iris.Init] (default to [RunService.Heartbeat]).
@@ -155,7 +160,7 @@ function Iris:Connect(callback: () -> ()): () -> () -- this uses method syntax f
     if Internal._started == false then
         warn("Iris:Connect() was called before calling Iris.Init(); always initialise Iris first.")
     end
-    local connectionIndex: number = #Internal._connectedFunctions + 1
+    local connectionIndex = #Internal._connectedFunctions + 1
     Internal._connectedFunctions[connectionIndex] = callback
     return function()
         Internal._connectedFunctions[connectionIndex] = nil
@@ -168,12 +173,12 @@ end
     @param userInstance GuiObject -- the Roblox [Instance] to insert into Iris
 
     Inserts any Roblox [Instance] into Iris.
-    
+
     The parent of the inserted instance can either be determined by the `_config.Parent`
     property or by the current parent widget from the stack.
 ]=]
 function Iris.Append(userInstance: GuiObject)
-    local parentWidget: Types.ParentWidget = Internal._GetParentWidget()
+    local parentWidget = Internal._GetParentWidget()
     local widgetInstanceParent: GuiObject
     if Internal._config.Parent then
         widgetInstanceParent = Internal._config.Parent :: any
@@ -193,7 +198,7 @@ end
     Iris.Text({"Above and outside the tree"})
 
     -- A Tree widget can contain children.
-    -- We must therefore remember to call `Iris.End()` 
+    -- We must therefore remember to call `Iris.End()`
     Iris.Tree({"My First Tree"})
         -- Widgets placed here **will** be inside the tree
         Iris.Text({"Tree item 1"})
@@ -206,7 +211,7 @@ end
     :::caution Caution: Error
     Seeing the error `Callback has too few calls to Iris.End()` or `Callback has too many calls to Iris.End()`?
     Using the wrong amount of `Iris.End()` calls in your code will lead to an error.
-    
+
     Each widget called which might have children should be paired with a call to `Iris.End()`, **even if the Widget doesnt currently have any children**.
     :::
 ]=]
@@ -290,10 +295,12 @@ function Iris.PushConfig(deltaStyle: { [string]: any })
         -- compare tables
         if Internal._deepCompare(ID:get(), deltaStyle) == false then
             -- refresh local
-            Internal._localRefreshActive = true
             ID:set(deltaStyle)
+            Internal._refreshStack[Internal._refreshLevel] = true
+            Internal._refreshCounter += 1
         end
     end
+    Internal._refreshLevel += 1
 
     Internal._config = setmetatable(deltaStyle, {
         __index = Internal._config,
@@ -309,11 +316,17 @@ end
     Each call to [Iris.PopConfig] should match a call to [Iris.PushConfig].
 ]=]
 function Iris.PopConfig()
-    Internal._localRefreshActive = false
+    Internal._refreshLevel -= 1
+    if Internal._refreshStack[Internal._refreshLevel] == true then
+        Internal._refreshCounter -= 1
+        Internal._refreshStack[Internal._refreshLevel] = nil
+    end
+
     Internal._config = getmetatable(Internal._config :: any).__index
 end
 
 --[=[
+
     @within Iris
     @prop TemplateConfig { [string]: { [string]: any } }
 
@@ -336,22 +349,27 @@ Internal._globalRefreshRequested = false -- UpdatingGlobalConfig changes this to
     @function PushId
     @param id ID -- custom id
 
-    Sets the id discriminator for the next widgets. Use [Iris.PopId] to remove it.
+    Pushes an id onto the id stack for all future widgets. Use [Iris.PopId] to pop it off the stack.
 ]=]
 function Iris.PushId(ID: Types.ID)
     assert(typeof(ID) == "string", "The ID argument to Iris.PushId() to be a string.")
 
-    Internal._pushedId = tostring(ID)
+    Internal._newID = true
+    table.insert(Internal._pushedIds, ID)
 end
 
 --[=[
     @within Iris
     @function PopID
 
-    Removes the id discriminator set by [Iris.PushId].
+    Removes the most recent pushed id from the id stack.
 ]=]
 function Iris.PopId()
-    Internal._pushedId = nil
+    if #Internal._pushedIds == 0 then
+        return
+    end
+
+    table.remove(Internal._pushedIds)
 end
 
 --[=[
@@ -418,20 +436,21 @@ end
     In this example, the code will work properly, and increment every frame.
     :::
 ]=]
-function Iris.State<T>(initialValue: T): Types.State<T>
-    local ID: Types.ID = Internal._getID(2)
+function Iris.State<T>(initialValue: T)
+    local ID = Internal._getID(2)
     if Internal._states[ID] then
         return Internal._states[ID]
     end
-    Internal._states[ID] = {
+    local newState = {
         ID = ID,
         value = initialValue,
         lastChangeTick = Iris.Internal._cycleTick,
         ConnectedWidgets = {},
         ConnectedFunctions = {},
-    } :: any
-    setmetatable(Internal._states[ID], Internal.StateClass)
-    return Internal._states[ID]
+    } :: Types.State<T>
+    setmetatable(newState, Internal.StateClass)
+    Internal._states[ID] = newState
+    return newState
 end
 
 --[=[
@@ -443,8 +462,8 @@ end
 
     Constructs a new state object, subsequent ID calls will return the same object, except all widgets connected to the state are discarded, the state reverts to the passed initialValue
 ]=]
-function Iris.WeakState<T>(initialValue: T): Types.State<T>
-    local ID: Types.ID = Internal._getID(2)
+function Iris.WeakState<T>(initialValue: T)
+    local ID = Internal._getID(2)
     if Internal._states[ID] then
         if next(Internal._states[ID].ConnectedWidgets) == nil then
             Internal._states[ID] = nil
@@ -452,15 +471,16 @@ function Iris.WeakState<T>(initialValue: T): Types.State<T>
             return Internal._states[ID]
         end
     end
-    Internal._states[ID] = {
+    local newState = {
         ID = ID,
         value = initialValue,
         lastChangeTick = Iris.Internal._cycleTick,
         ConnectedWidgets = {},
         ConnectedFunctions = {},
-    } :: any
-    setmetatable(Internal._states[ID], Internal.StateClass)
-    return Internal._states[ID]
+    } :: Types.State<T>
+    setmetatable(newState, Internal.StateClass)
+    Internal._states[ID] = newState
+    return newState
 end
 
 --[=[
@@ -472,7 +492,7 @@ end
     @tag State
 
     Returns a state object linked to a local variable.
-    
+
     The passed variable is used to check whether the state object should update. The callback method is used to change the local variable when the state changes.
 
     The existence of such a function is to make working with local variables easier.
@@ -493,17 +513,17 @@ end
     static int myNumber = 5;
     ImGui::DragInt("My number", &myNumber); // Here in C++, we can directly pass the variable.
     ```
-    
-    :::warning Update Order
+
+    :::caution Caution: Update Order
     If the variable and state value are different when calling this, the variable value takes precedence.
 
     Therefore, if you update the state using `state.value = ...` then it will be overwritten by the variable value.
     You must use `state:set(...)` if you want the variable to update to the state's value.
     :::
 ]=]
-function Iris.VariableState<T>(variable: T, callback: (T) -> ()): Types.State<T>
-    local ID: Types.ID = Internal._getID(2)
-    local state: Types.State<T>? = Internal._states[ID]
+function Iris.VariableState<T>(variable: T, callback: (T) -> ())
+    local ID = Internal._getID(2)
+    local state = Internal._states[ID]
 
     if state then
         if variable ~= state.value then
@@ -537,10 +557,10 @@ end
     @tag State
 
     Similar to Iris.VariableState but takes a table and key to modify a specific value and a callback to determine whether to update the value.
-    
+
     The passed table and key are used to check the value. The callback is called when the state changes value and determines whether we update the table.
     This is useful if we want to monitor a table value which needs to call other functions when changed.
-    
+
     Since tables are pass-by-reference, we can modify the table anywhere and it will update all other instances. Therefore, we don't need a callback by default.
     ```lua
     local data = {
@@ -574,17 +594,17 @@ end
     Iris.Checkbox({ "Started" }, { isChecked = state })
     ```
 
-    :::warning Update Order
+    :::caution Caution: Update Order
     If the table value and state value are different when calling this, the table value value takes precedence.
 
     Therefore, if you update the state using `state.value = ...` then it will be overwritten by the table value.
     You must use `state:set(...)` if you want the table value to update to the state's value.
     :::
 ]=]
-function Iris.TableState<K, V>(tab: { [K]: V }, key: K, callback: ((newValue: V) -> false?)?): Types.State<V>
-    local value: V = tab[key]
-    local ID: Types.ID = Internal._getID(2)
-    local state: Types.State<V>? = Internal._states[ID]
+function Iris.TableState<K, V>(tab: { [K]: V }, key: K, callback: ((newValue: V) -> false?)?)
+    local value = tab[key]
+    local ID = Internal._getID(2)
+    local state = Internal._states[ID]
 
     -- If the table values changes, then we update the state to match.
     if state then
@@ -634,24 +654,26 @@ end
     ```
     :::
 ]=]
-function Iris.ComputedState<T, U>(firstState: Types.State<T>, onChangeCallback: (firstValue: T) -> U): Types.State<U>
-    local ID: Types.ID = Internal._getID(2)
+function Iris.ComputedState<T, U>(firstState: Types.State<T>, onChangeCallback: (firstValue: T) -> U)
+    local ID = Internal._getID(2)
 
     if Internal._states[ID] then
         return Internal._states[ID]
     else
-        Internal._states[ID] = {
+        local newState = {
             ID = ID,
             value = onChangeCallback(firstState.value),
             lastChangeTick = Iris.Internal._cycleTick,
             ConnectedWidgets = {},
             ConnectedFunctions = {},
-        } :: Types.State<U>
+        } :: Types.State<T>
+        setmetatable(newState, Internal.StateClass)
+        Internal._states[ID] = newState
+
         firstState:onChange(function(newValue: T)
-            Internal._states[ID]:set(onChangeCallback(newValue))
+            newState:set(onChangeCallback(newValue))
         end)
-        setmetatable(Internal._states[ID], Internal.StateClass)
-        return Internal._states[ID]
+        return newState
     end
 end
 

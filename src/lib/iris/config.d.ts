@@ -68,6 +68,8 @@ export interface Config {
 	TableRowBgTransparency: number;
 	TableRowBgAltColor: Color3;
 	TableRowBgAltTransparency: number;
+  TableHeaderColor: Color3;
+  TableHeaderTransparency: number;
 
 	NavWindowingHighlightColor: Color3;
 	NavWindowingHighlightTransparency: number;
